@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type GoogleCredentialResponse = {
@@ -52,10 +52,12 @@ export default function LoginPage() {
   function initializeGoogleButton() {
     const button = document.getElementById("google-sign-in-button");
 
-    if (!button || !window.google || !googleClientId) {
+    if (!button || !googleClientId) {
       setMessage("Google sign-in is not configured.");
       return;
     }
+
+    if (!window.google || button.childElementCount > 0) return;
 
     window.google.accounts.id.initialize({
       client_id: googleClientId,
@@ -67,6 +69,23 @@ export default function LoginPage() {
       width: 320,
     });
   }
+
+  useEffect(() => {
+    const retry = window.setInterval(() => {
+      const button = document.getElementById("google-sign-in-button");
+      if (!button || !window.google || !googleClientId || button.childElementCount > 0) return;
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCredential,
+      });
+      window.google.accounts.id.renderButton(button, {
+        theme: "outline",
+        size: "large",
+        width: 320,
+      });
+    }, 500);
+    return () => window.clearInterval(retry);
+  }, [googleClientId]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
@@ -82,6 +101,8 @@ export default function LoginPage() {
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
           onLoad={initializeGoogleButton}
+          onReady={initializeGoogleButton}
+          onError={() => setMessage("Google sign-in could not load. Please refresh the page.")}
         />
         <div id="google-sign-in-button" className="mt-8 flex justify-center" />
         {message && <p className="mt-4 text-sm text-slate-300">{message}</p>}
