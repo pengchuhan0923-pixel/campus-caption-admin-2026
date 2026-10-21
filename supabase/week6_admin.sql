@@ -1,0 +1,9 @@
+alter table public.profiles add column if not exists is_superadmin boolean not null default false;
+create or replace function public.is_superadmin() returns boolean language sql stable security definer set search_path=public as $$ select coalesce((select is_superadmin from public.profiles where id=auth.uid()),false); $$;
+revoke all on function public.is_superadmin() from public;grant execute on function public.is_superadmin() to authenticated;
+drop policy if exists "Superadmins can read profiles" on public.profiles;create policy "Superadmins can read profiles" on public.profiles for select to authenticated using(public.is_superadmin());
+drop policy if exists "Superadmins can read all captions" on public.captions;drop policy if exists "Superadmins can create captions" on public.captions;drop policy if exists "Superadmins can update captions" on public.captions;drop policy if exists "Superadmins can delete captions" on public.captions;
+create policy "Superadmins can read all captions" on public.captions for select to authenticated using(public.is_superadmin());create policy "Superadmins can create captions" on public.captions for insert to authenticated with check(public.is_superadmin());create policy "Superadmins can update captions" on public.captions for update to authenticated using(public.is_superadmin()) with check(public.is_superadmin());create policy "Superadmins can delete captions" on public.captions for delete to authenticated using(public.is_superadmin());
+drop policy if exists "Superadmins can read all votes" on public.caption_votes;create policy "Superadmins can read all votes" on public.caption_votes for select to authenticated using(public.is_superadmin());
+-- Then promote only your own UUID from Authentication > Users:
+-- update public.profiles set is_superadmin=true where id='YOUR-USER-UUID';
