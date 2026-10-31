@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type GoogleCredentialResponse = {
@@ -33,7 +33,7 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  async function handleGoogleCredential(response: GoogleCredentialResponse) {
+  const handleGoogleCredential = useCallback(async (response: GoogleCredentialResponse) => {
     setMessage("Verifying your Google account…");
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithIdToken({
@@ -47,9 +47,9 @@ export default function LoginPage() {
     }
 
     router.push("/auth/callback");
-  }
+  }, [router]);
 
-  function initializeGoogleButton() {
+  const initializeGoogleButton = useCallback(() => {
     const button = document.getElementById("google-sign-in-button");
 
     if (!button || !googleClientId) {
@@ -68,7 +68,7 @@ export default function LoginPage() {
       size: "large",
       width: 320,
     });
-  }
+  }, [googleClientId, handleGoogleCredential]);
 
   useEffect(() => {
     const retry = window.setInterval(() => {
@@ -85,7 +85,7 @@ export default function LoginPage() {
       });
     }, 500);
     return () => window.clearInterval(retry);
-  }, [googleClientId]);
+  }, [googleClientId, handleGoogleCredential]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
