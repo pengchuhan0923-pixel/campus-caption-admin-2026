@@ -6,6 +6,10 @@ const navigation = [
   ["Profiles", "/admin/profiles", "◎"],
   ["AI Media", "/admin/media", "◇"],
   ["Votes", "/admin/votes", "↕"],
+  ["Prompt Ops", "/admin/prompting", "⎇"],
+  ["Generations", "/admin/generations", "✦"],
+  ["LLM Registry", "/admin/llm", "⌘"],
+  ["Access Lists", "/admin/access", "⊙"],
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -17,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <span className="grid h-11 w-11 -rotate-3 place-items-center rounded-xl bg-amber-300 text-xl font-black text-slate-950">CC</span>
           <strong className="leading-4">Caption<br/>Control</strong>
         </Link>
-        <nav className="mt-5 grid grid-cols-4 gap-1 lg:mt-12 lg:flex lg:flex-col">
+        <nav className="mt-5 grid grid-cols-4 gap-1 lg:mt-12 lg:flex lg:flex-col lg:overflow-y-auto">
           {navigation.map(([label, href, icon]) => (
             <Link key={href} href={href} className="flex flex-col items-center gap-1 rounded-xl px-2 py-3 text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white lg:flex-row lg:gap-3 lg:px-4 lg:text-sm">
               <span className="text-lg text-emerald-300">{icon}</span>{label}
